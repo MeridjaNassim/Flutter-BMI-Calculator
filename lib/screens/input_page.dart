@@ -11,28 +11,7 @@ import '../logic/controllers.dart';
 import '../logic/types.dart';
 
 
-class InputPage extends StatefulWidget {
-  @override
-  _InputPageState createState() => _InputPageState();
-}
-
-class _InputPageState extends State<InputPage> {
-
-  Color maleCardColor ;
-  Color femaleCardColor ;
-  @override
-  void initState() {
-    super.initState();
-    maleCardColor = kActiveContainerColor;
-    femaleCardColor = kInactiveContainerColor;
-  }
-  void _toggleGender(GenderType gender) {
-    if(gender == controller.getSelectedGender()) return ;
-    setState(() {
-     controller.toggleGender(gender);
-    });
-  }
-  Color _dispatchSelectionColor(GenderType gender) => controller.getSelectedGender() == gender ? kActiveContainerColor : kInactiveContainerColor;
+class InputPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
@@ -45,27 +24,77 @@ class _InputPageState extends State<InputPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Expanded(
+              child: GenderRow()
+          ),
+          Expanded(
+          child: Height()
+          ),
+          Expanded(
               child: Row(
               children: <Widget>[
-                Expanded(
-                  child: ReusableCard(color: _dispatchSelectionColor(GenderType.MALE) ,
-                  onTap: ()=> _toggleGender(GenderType.MALE),
-                    child: GenderContainer(
-                    text: "MALE",
-                    icon: FontAwesomeIcons.mars,
-                      ),
-                  ),
-                ),
-                Expanded(
-                    child: ReusableCard(color:_dispatchSelectionColor(GenderType.FEMALE),
-                    onTap: ()=>_toggleGender(GenderType.FEMALE),
-                    child : GenderContainer(text: "FEMALE", icon: FontAwesomeIcons.venus)
-                  ),
-                )
+                Expanded(child:Parameter(parameterName: "weight",
+                onPlus: ()=>controller.incrementWeight(),
+                onMinus: ()=> controller.decrementWeight(),
+                valueGetter: ()=> controller.getWeight(),
+                unitGetter: ()=>controller.weightUnit(),
+                ),),
+                Expanded(child: Parameter(parameterName: "age",
+                onPlus: ()=>controller.incrementAge(),
+                onMinus: ()=> controller.decrementAge(),
+                valueGetter: ()=> controller.getAge(),
+                unitGetter: ()=>controller.ageUnit(),
+                ),),
               ],
             ),
           ),
-          Expanded(child: ReusableCard(color:kActiveContainerColor,
+          BottomButton(onTap: ()=> Navigator.pushNamed(context,bmi_route ) , text: "CALCULATE YOUR BMI",)
+         
+        ],
+      )
+    );
+  }
+
+
+}
+
+
+class Parameter extends StatefulWidget {
+  Parameter({Key key ,@required this.parameterName,this.onMinus,this.onPlus,this.valueGetter,this.unitGetter}) : super(key: key);
+  final String parameterName ;
+  final Function onPlus;
+  final Function onMinus;
+  final Function valueGetter;
+  final Function unitGetter ;
+  @override
+  _ParameterState createState() => _ParameterState();
+}
+
+class _ParameterState extends State<Parameter> {
+  @override
+  Widget build(BuildContext context) {
+    return ReusableCard(
+                  color:kActiveContainerColor,
+                  child: ParameterContainer(name: widget.parameterName.toUpperCase(), heroTag: widget.parameterName.toLowerCase(),onPlus: (){
+                    setState(widget.onPlus);
+                  }, onMinus:(){
+                    setState(widget.onMinus);
+                  }  , value: widget.valueGetter().toString(), unit:widget.unitGetter(),),
+      );
+  }
+}
+
+class Height extends StatefulWidget {
+  Height({Key key}) : super(key: key);
+
+  @override
+  _HeightState createState() => _HeightState();
+}
+
+class _HeightState extends State<Height> {
+  @override
+  Widget build(BuildContext context) {
+    return ReusableCard(
+          color:kActiveContainerColor,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -98,35 +127,56 @@ class _InputPageState extends State<InputPage> {
               )
             ],
           ),
-          )),
-          Expanded(
-              child: Row(
-              children: <Widget>[
-                Expanded(child: ReusableCard(
-                  color:kActiveContainerColor,
-                  child: ParameterContainer(name: "WEIGHT", heroTag: "weight",onPlus: (){
-                    setState(()=> controller.incrementWeight());
-                  }, onMinus:(){
-                    setState(() => controller.decrementWeight());
-                  }  , value: controller.getWeight().toString(), unit:controller.weightUnit(),),
-                  )),
-                Expanded(child: ReusableCard(color:kActiveContainerColor,
-                child: ParameterContainer(name: "AGE",heroTag: "age" ,onPlus: (){
-                  setState(()=> controller.incrementAge());
-                }, onMinus:(){
-                  setState(()=> controller.decrementAge());
-                }, value :controller.getAge().toString() , unit:controller.ageUnit()),
-                ))
-              ],
-            ),
-          ),
-          BottomButton(onTap: ()=> Navigator.pushNamed(context,bmi_route ) , text: "CALCULATE YOUR BMI",)
-         
-        ],
-      )
-    );
+        );
   }
-
-
 }
 
+class GenderRow extends StatefulWidget {
+  GenderRow({Key key}) : super(key: key);
+
+  @override
+  _GenderRowState createState() => _GenderRowState();
+}
+
+class _GenderRowState extends State<GenderRow> {
+  Color maleCardColor ;
+  Color femaleCardColor ;
+  @override
+  void initState() {
+    super.initState();
+    maleCardColor = kActiveContainerColor;
+    femaleCardColor = kInactiveContainerColor;
+  }
+  
+  void _toggleGender(GenderType gender) {
+    if(gender == controller.getSelectedGender()) return ;
+    setState(() {
+     controller.toggleGender(gender);
+    }); 
+    
+    }
+  Color _dispatchSelectionColor(GenderType gender) => controller.getSelectedGender() == gender ? kActiveContainerColor : kInactiveContainerColor;
+ 
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+              children: <Widget>[
+                Expanded(
+                  child: ReusableCard(color: _dispatchSelectionColor(GenderType.MALE) ,
+                  onTap: ()=> _toggleGender(GenderType.MALE),
+                    child: GenderContainer(
+                    text: "MALE",
+                    icon: FontAwesomeIcons.mars,
+                      ),
+                  ),
+                ),
+                Expanded(
+                    child: ReusableCard(color:_dispatchSelectionColor(GenderType.FEMALE),
+                    onTap: ()=>_toggleGender(GenderType.FEMALE),
+                    child : GenderContainer(text: "FEMALE", icon: FontAwesomeIcons.venus)
+                  ),
+                )
+              ],
+            );
+  }
+}
